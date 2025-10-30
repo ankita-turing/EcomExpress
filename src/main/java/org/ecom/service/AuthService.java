@@ -6,6 +6,8 @@ import org.ecom.model.AuthRequest;
 import org.ecom.model.AuthResponse;
 import org.ecom.repository.UserRepository;
 import org.ecom.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +19,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
@@ -34,6 +37,7 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtService.generateToken(user);
+        logger.info("Token generated: ", token);
         return new AuthResponse(token, user.getName(), user.getRole());
     }
 
@@ -46,6 +50,7 @@ public class AuthService {
         }
 
         String token = jwtService.generateToken(user);
+        logger.info("Token generated: ", token);
         return new AuthResponse(token, user.getName(), user.getRole());
     }
 

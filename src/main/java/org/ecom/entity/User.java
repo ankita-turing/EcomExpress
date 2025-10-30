@@ -2,6 +2,8 @@ package org.ecom.entity;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -29,6 +31,12 @@ public class User {
         this.password = password;
         this.role = role;
     }
+
+    public <T> User(String email, String password, List<T> ts) {
+        this.email = email;
+        this.password = password;
+    }
+
 
     public Long getId() {
         return id;

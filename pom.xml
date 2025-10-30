@@ -111,7 +111,6 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -129,6 +128,7 @@
             <version>5.20.0</version>
             <scope>test</scope>
         </dependency>
+
 
     </dependencies>
 
@@ -162,6 +162,7 @@
                     <argLine>-Dnet.bytebuddy.experimental=true</argLine>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 

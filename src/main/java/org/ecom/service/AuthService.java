@@ -24,4 +24,29 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
+    public AuthResponse register(AuthRequest request) {
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole("ROLE_USER");
+
+        userRepository.save(user);
+
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, user.getName(), user.getRole());
+    }
+
+    public AuthResponse login(AuthRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Invalid password");
+        }
+
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, user.getName(), user.getRole());
+    }
+
 }

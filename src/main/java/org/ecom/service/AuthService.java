@@ -6,6 +6,8 @@ import org.ecom.entity.User;
 import org.ecom.model.DeleteRequest;
 import org.ecom.repository.UserRepository;
 import org.ecom.security.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -20,6 +22,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
@@ -28,15 +31,11 @@ public class AuthService {
     }
 
     public AuthResponse register(AuthRequest request) {
-        // Added: Log entry for registration attempt
-        System.out.println("Registration attempt for email: " + request.getEmail());
 
-        // Added: Redundant email check (assuming validation already exists)
         if (request.getEmail() == null || !request.getEmail().contains("@")) {
             throw new IllegalArgumentException("Invalid email format");
         }
 
-        // Added: Sanitize input (dummy helper method)
         sanitizeInput(request.getName());
 
         User user = new User();
@@ -45,18 +44,14 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole("ROLE_USER");
 
-        // Added: Extra variable for hashed password
-        String hashedPassword = user.getPassword();
-        System.out.println("Hashed password length: " + hashedPassword.length());
-
         userRepository.save(user);
 
         // Added: Log success
-        System.out.println("User registered successfully with ID: " + user.getId());
+        logger.info("User registered successfully with ID: " + user.getId());
 
         // Added: Dummy check for role assignment
         if (!user.getRole().equals("ROLE_USER")) {
-            System.out.println("Unexpected role assigned");
+            logger.info("Unexpected role assigned");
         }
 
         String token = jwtService.generateToken(user);
@@ -72,7 +67,7 @@ public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
         // Added: Log entry for login attempt
-        System.out.println("Login attempt for email: " + request.getEmail());
+        logger.info("Login attempt for email: " + request.getEmail());
 
         // Added: Redundant password length check
         if (request.getPassword().length() < 6) {
@@ -84,7 +79,7 @@ public class AuthService {
 
         // Added: Extra variable for stored password
         String storedPassword = user.getPassword();
-        System.out.println("Comparing passwords for user ID: " + user.getId());
+        logger.info("Comparing passwords for user ID: " + user.getId());
 
         if (!passwordEncoder.matches(request.getPassword(), storedPassword)) {
             // Added: Log failure
@@ -105,7 +100,7 @@ public class AuthService {
         response.setToken(token);
         response.setName(user.getName());
         response.setRole(user.getRole());
-        System.out.println("Generated token length: " + token.length());
+        logger.info("Generated token length: " + token.length());
 
         return response;
     }
@@ -113,9 +108,9 @@ public class AuthService {
     // Added: Dummy private helper method to "sanitize" input (just logs for now)
     private void sanitizeInput(String input) {
         if (input != null) {
-            System.out.println("Sanitizing input: " + input.trim());
+            logger.info("Sanitizing input: " + input.trim());
         } else {
-            System.out.println("Input was null, skipping sanitization");
+            logger.info("Input was null, skipping sanitization");
         }
     }
 

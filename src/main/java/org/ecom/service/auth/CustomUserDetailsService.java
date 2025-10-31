@@ -1,7 +1,7 @@
-package org.ecom.service;
+package org.ecom.service.auth;
 
-import org.ecom.entity.User;
-import org.ecom.repository.UserRepository;
+import org.ecom.entity.auth.User;
+import org.ecom.repository.auth.UserRepository;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

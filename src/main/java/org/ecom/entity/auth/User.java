@@ -1,4 +1,4 @@
-package org.ecom.entity;
+package org.ecom.entity.auth;
 
 import jakarta.persistence.*;
 

@@ -1,11 +1,11 @@
 
-import org.ecom.entity.User;
-import org.ecom.model.AuthRequest;
-import org.ecom.model.AuthResponse;
-import org.ecom.model.DeleteRequest;
-import org.ecom.repository.UserRepository;
+import org.ecom.entity.auth.User;
+import org.ecom.model.auth.AuthRequest;
+import org.ecom.model.auth.AuthResponse;
+import org.ecom.model.auth.DeleteRequest;
+import org.ecom.repository.auth.UserRepository;
 import org.ecom.security.JwtService;
-import org.ecom.service.AuthService;
+import org.ecom.service.auth.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

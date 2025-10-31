@@ -1,6 +1,5 @@
-package org.ecom.model;
+package org.ecom.model.auth;
 
-import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 
 public class AuthRequest {

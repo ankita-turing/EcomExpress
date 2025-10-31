@@ -1,4 +1,4 @@
-package org.ecom.model;
+package org.ecom.model.auth;
 
 
 import java.util.Objects;

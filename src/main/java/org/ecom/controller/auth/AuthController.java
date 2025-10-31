@@ -1,10 +1,10 @@
-package org.ecom.controller;
+package org.ecom.controller.auth;
 
 import jakarta.validation.Valid;
-import org.ecom.model.AuthRequest;
-import org.ecom.model.AuthResponse;
-import org.ecom.model.DeleteRequest;
-import org.ecom.service.AuthService;
+import org.ecom.model.auth.AuthRequest;
+import org.ecom.model.auth.AuthResponse;
+import org.ecom.model.auth.DeleteRequest;
+import org.ecom.service.auth.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

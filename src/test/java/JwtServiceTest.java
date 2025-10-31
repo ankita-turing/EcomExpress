@@ -1,6 +1,6 @@
 
 
-import org.ecom.entity.User;
+import org.ecom.entity.auth.User;
 import org.ecom.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

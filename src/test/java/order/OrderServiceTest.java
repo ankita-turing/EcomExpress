@@ -35,11 +35,15 @@ class OrderServiceTest {
     private Product product1;
     private Product product2;
 
+    private Order order1;
+    private Order order2;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
         user = new User();
+        user.setId(1L);
         user.setEmail("test@example.com");
 
         product1 = new Product();
@@ -51,6 +55,14 @@ class OrderServiceTest {
         product2.setId(2L);
         product2.setName("Mouse");
         product2.setPrice(1500.0);
+
+        order1 = new Order();
+        order1.setId(100L);
+        order1.setUser(user);
+
+        order2 = new Order();
+        order2.setId(101L);
+        order2.setUser(user);
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getName()).thenReturn("test@example.com");
@@ -158,5 +170,71 @@ class OrderServiceTest {
         assertEquals(1, order.getItems().size());
         assertEquals(50000.0, order.getTotalAmount());
         assertEquals("Laptop", order.getItems().get(0).getProduct().getName());
+    }
+
+    @Test
+    void getUserOrders_ShouldFetchAndResaveOrders() {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(orderRepository.findByUser(user)).thenReturn(List.of(order1, order2));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<Order> result = orderService.getUserOrders();
+
+        assertEquals(2, result.size());
+        verify(orderRepository, times(2)).save(any(Order.class)); // each order re-saved
+    }
+
+    /**
+     * ✅ Fetch one order by ID, persist it again.
+     */
+    @Test
+    void getOrderById_ShouldFetchAndResaveOrder() {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(orderRepository.findById(100L)).thenReturn(Optional.of(order1));
+        when(orderRepository.save(order1)).thenReturn(order1);
+
+        Order result = orderService.getOrderById(100L);
+
+        assertNotNull(result);
+        assertEquals(order1, result);
+        verify(orderRepository, times(1)).save(order1); // order re-saved
+    }
+
+    /**
+     * ✅ Throw when accessing another user’s order.
+     */
+    @Test
+    void getOrderById_ShouldThrowIfNotUserOrder() {
+        User another = new User();
+        another.setId(2L);
+        Order otherOrder = new Order();
+        otherOrder.setId(200L);
+        otherOrder.setUser(another);
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(orderRepository.findById(200L)).thenReturn(Optional.of(otherOrder));
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> orderService.getOrderById(200L));
+        assertEquals("Access denied: not your order", ex.getMessage());
+    }
+
+    /**
+     * ✅ Throw when order not found.
+     */
+    @Test
+    void getOrderById_ShouldThrowIfOrderNotFound() {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(orderRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> orderService.getOrderById(999L));
+    }
+
+    /**
+     * ✅ Throw when user not found.
+     */
+    @Test
+    void getUserOrders_ShouldThrowIfUserNotFound() {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> orderService.getUserOrders());
     }
 }
